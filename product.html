@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-white shadow py-4 mb-8">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <a href="index.html" class="text-2xl font-bold text-gray-800">Bubble</a>
+            <a href="shop.html" class="text-blue-600 hover:underline">Shop</a>
+        </div>
+    </nav>
+    <main class="container mx-auto px-4">
+        <div id="product-detail" class="bg-white rounded-xl shadow-lg p-8 flex flex-col md:flex-row gap-8"></div>
+    </main>
+    <script>
+    // Helper to get query param
+    function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+
+    // Price modifiers for demo (you can expand this in your products.json if needed)
+    const MATERIAL_PRICE_MOD = {
+        'PLA': 0,
+        'ABS': 2,
+        'PETG': 3,
+        'Resin': 5,
+        'Carbon Fiber': 10,
+        'Nylon': 4,
+        'Polycarbonate': 6,
+        'TPU': 2,
+        'Silicone': 3,
+        'Memory Foam': 4,
+        'Leather': 8
+    };
+    const SIZE_PRICE_MOD = {
+        'Small': 0,
+        'Medium': 5,
+        'Large': 10
+    };
+
+    const productId = getQueryParam('id');
+    fetch('products.json')
+        .then(res => res.json())
+        .then(products => {
+            const product = products.find(p => String(p.id) === String(productId));
+            if (!product) {
+                document.getElementById('product-detail').innerHTML = '<p class="text-red-500">Product not found.</p>';
+                return;
+            }
+            // Default options
+            let selectedColor = product.colors[0];
+            let selectedMaterial = product.materials[0];
+            let selectedSize = 'Medium'; // Default size
+            let quantity = 1;
+
+            // Optionally, add sizes if you want
+            const sizes = ['Small', 'Medium', 'Large'];
+
+            function getPrice() {
+                let price = product.price;
+                if (selectedMaterial && MATERIAL_PRICE_MOD[selectedMaterial]) price += MATERIAL_PRICE_MOD[selectedMaterial];
+                if (selectedSize && SIZE_PRICE_MOD[selectedSize]) price += SIZE_PRICE_MOD[selectedSize];
+                return price * quantity;
+            }
+
+            function render() {
+                document.getElementById('product-detail').innerHTML = `
+                    <div class="flex-1 flex flex-col items-center justify-center">
+                        <img src="${product.image}" alt="${product.name}" class="w-96 h-96 object-contain rounded-xl bg-gray-50 mb-6">
+                    </div>
+                    <div class="flex-1 flex flex-col gap-4">
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">${product.name}</h1>
+                        <p class="text-lg text-gray-600 mb-4">${product.description}</p>
+                        <div class="text-2xl font-semibold text-green-600 mb-2">$${getPrice().toFixed(2)}</div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-gray-700">Color:</span>
+                            ${product.colors.map(color => `
+                                <button class="w-7 h-7 rounded-full border-2 ${selectedColor === color ? 'border-blue-500' : 'border-gray-300'}" style="background:${color}" data-color="${color}"></button>
+                            `).join('')}
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-gray-700">Material:</span>
+                            <select id="material-select" class="border rounded px-2 py-1">
+                                ${product.materials.map(mat => `<option value="${mat}" ${selectedMaterial === mat ? 'selected' : ''}>${mat}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-gray-700">Size:</span>
+                            <select id="size-select" class="border rounded px-2 py-1">
+                                ${sizes.map(size => `<option value="${size}" ${selectedSize === size ? 'selected' : ''}>${size}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-gray-700">Quantity:</span>
+                            <button id="qty-minus" class="px-2 py-1 border rounded">-</button>
+                            <input id="qty-input" type="number" min="1" max="${product.stock}" value="${quantity}" class="w-16 text-center border rounded">
+                            <button id="qty-plus" class="px-2 py-1 border rounded">+</button>
+                            <span class="text-sm text-gray-500 ml-2">${product.stock} in stock</span>
+                        </div>
+                        <button id="add-to-cart" class="mt-4 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 text-lg font-semibold">Add to cart</button>
+                        <div class="mt-6 text-sm text-gray-500">
+                            <div><b>Terms and Conditions</b></div>
+                            <ul class="list-disc pl-5">
+                                <li>30-day money-back guarantee</li>
+                                <li>Shipping: 2-3 Business Days</li>
+                                <li>For custom designs, please contact us</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                // Color selection
+                document.querySelectorAll('[data-color]').forEach(btn => {
+                    btn.onclick = () => { selectedColor = btn.getAttribute('data-color'); render(); };
+                });
+                // Material selection
+                document.getElementById('material-select').onchange = e => { selectedMaterial = e.target.value; render(); };
+                // Size selection
+                document.getElementById('size-select').onchange = e => { selectedSize = e.target.value; render(); };
+                // Quantity
+                document.getElementById('qty-minus').onclick = () => { if (quantity > 1) { quantity--; render(); } };
+                document.getElementById('qty-plus').onclick = () => { if (quantity < product.stock) { quantity++; render(); } };
+                document.getElementById('qty-input').onchange = e => {
+                    let val = parseInt(e.target.value);
+                    if (isNaN(val) || val < 1) val = 1;
+                    if (val > product.stock) val = product.stock;
+                    quantity = val;
+                    render();
+                };
+                // Add to cart (for demo, just alert)
+                document.getElementById('add-to-cart').onclick = () => {
+                    alert(`${quantity} x ${product.name} (${selectedColor}, ${selectedMaterial}, ${selectedSize}) added to cart!`);
+                };
+            }
+            render();
+        });
+    </script>
+</body>
+</html> 

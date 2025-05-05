@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="font-sans text-white">
+    <nav class="fixed top-0 w-full z-50 holo-bg py-4">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <a href="index.html" class="text-4xl font-extrabold holo-text">Bubble</a>
+            <ul class="flex space-x-8">
+                <li><a href="index.html" class="nav-link text-lg hover:holo-text">Home</a></li>
+                <li><a href="shop.html" class="nav-link text-lg hover:holo-text">Shop</a></li>
+                <li><a href="about.html" class="nav-link text-lg hover:holo-text">About</a></li>
+                <li><a href="support.html" class="nav-link text-lg hover:holo-text">Support</a></li>
+                <li><a href="contact.html" class="nav-link text-lg hover:holo-text">Contact Us</a></li>
+                <li><a href="cart.html" class="nav-link text-lg hover:holo-text">Cart (<span id="cart-count">0</span>)</a></li>
+                <li><a href="login.html" class="nav-link text-lg hover:holo-text active">Login</a></li>
+                <li><a href="#" id="settings-btn" class="nav-link text-lg hover:holo-text">Settings</a></li>
+            </ul>
+        </div>
+    </nav>
+    <section class="pt-24 pb-20">
+        <div class="container mx-auto">
+            <h1 class="text-5xl font-extrabold holo-text text-center mb-8">Account Access</h1>
+            
+            <div class="max-w-lg mx-auto">
+                <!-- Login/Register Tabs -->
+                <div class="flex border-b border-gray-700 mb-8">
+                    <button id="login-tab" class="px-6 py-3 text-lg font-medium border-b-2 border-blue-500 text-blue-400">Login</button>
+                    <button id="register-tab" class="px-6 py-3 text-lg font-medium text-gray-400 hover:text-white">Register</button>
+                </div>
+                
+                <!-- Login Form -->
+                <div id="login-form" class="bg-gray-800 p-8 rounded-xl neon-glow">
+                    <h3 class="text-2xl font-semibold holo-text mb-6">Welcome Back</h3>
+                    <p class="text-gray-400 mb-6">Login to access your account and manage your 3D printing projects.</p>
+                    <div>
+                        <label for="email" class="block text-lg mb-2">Email</label>
+                        <input id="email" type="email" class="w-full p-3 rounded bg-gray-700 text-white mb-4 focus:ring-2 focus:ring-blue-400" placeholder="Your email">
+                        <label for="password" class="block text-lg mb-2">Password</label>
+                        <input id="password" type="password" class="w-full p-3 rounded bg-gray-700 text-white mb-4 focus:ring-2 focus:ring-blue-400" placeholder="Your password">
+                        <button id="loginBtn" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-full neon-glow hover:from-blue-600 hover:to-purple-700 w-full">Login</button>
+                        <p class="mt-4 text-center text-gray-400">
+                            Don't have an account? <button id="switch-to-register" class="text-blue-400 hover:underline">Register now</button>
+                        </p>
+                        <p id="loginFeedback" class="mt-4 hidden"></p>
+                    </div>
+                </div>
+                
+                <!-- Register Form -->
+                <div id="register-form" class="bg-gray-800 p-8 rounded-xl neon-glow hidden">
+                    <h3 class="text-2xl font-semibold holo-text mb-6">Create Account</h3>
+                    <p class="text-gray-400 mb-6">Join Bubble and start bringing your 3D printing ideas to life.</p>
+                    <div>
+                        <label for="register-name" class="block text-lg mb-2">Full Name</label>
+                        <input id="register-name" type="text" class="w-full p-3 rounded bg-gray-700 text-white mb-4 focus:ring-2 focus:ring-blue-400" placeholder="Your name">
+                        <label for="register-email" class="block text-lg mb-2">Email</label>
+                        <input id="register-email" type="email" class="w-full p-3 rounded bg-gray-700 text-white mb-4 focus:ring-2 focus:ring-blue-400" placeholder="Your email">
+                        <label for="register-password" class="block text-lg mb-2">Password</label>
+                        <input id="register-password" type="password" class="w-full p-3 rounded bg-gray-700 text-white mb-4 focus:ring-2 focus:ring-blue-400" placeholder="Choose a password">
+                        <button id="registerBtn" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-full neon-glow hover:from-blue-600 hover:to-purple-700 w-full">Create Account</button>
+                        <p class="mt-4 text-center text-gray-400">
+                            Already have an account? <button id="switch-to-login" class="text-blue-400 hover:underline">Login</button>
+                        </p>
+                        <p id="registerFeedback" class="mt-4 hidden"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div class="relative z-10 max-w-lg mx-auto mt-20 bg-gray-800 rounded-xl neon-glow p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold holo-text">Settings</h2>
+                <button id="close-settings" class="text-2xl hover:text-blue-400">×</button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl mb-3">Theme Preferences</h3>
+                    <div class="flex items-center space-x-4">
+                        <span>Dark Mode</span>
+                        <label class="relative inline-block w-12 h-6">
+                            <input type="checkbox" class="opacity-0 w-0 h-0">
+                            <span class="absolute cursor-pointer inset-0 bg-gray-700 rounded-full before:absolute before:content-[''] before:h-4 before:w-4 before:left-1 before:bottom-1 before:bg-blue-400 before:rounded-full before:transition-all before:duration-300 before:checked:transform before:checked:translate-x-6"></span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl mb-3">Notifications</h3>
+                    <div class="flex items-center space-x-4">
+                        <span>Email Alerts</span>
+                        <label class="relative inline-block w-12 h-6">
+                            <input type="checkbox" class="opacity-0 w-0 h-0" checked>
+                            <span class="absolute cursor-pointer inset-0 bg-gray-700 rounded-full before:absolute before:content-[''] before:h-4 before:w-4 before:left-1 before:bottom-1 before:bg-blue-400 before:rounded-full before:transition-all before:duration-300 before:checked:transform before:checked:translate-x-6"></span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl mb-3">Language</h3>
+                    <select class="w-full bg-gray-700 rounded-lg p-2 border border-gray-600 text-white">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                    </select>
+                </div>
+                <button class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-purple-700">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-black py-12">
+        <div class="container mx-auto text-center">
+            <p class="text-lg mb-4">© 2025 Bubble Inc. All rights reserved.</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="text-blue-400 hover:holo-text">Twitter</a>
+                <a href="#" class="text-blue-400 hover:holo-text">Instagram</a>
+                <a href="#" class="text-blue-400 hover:holo-text">LinkedIn</a>
+            </div>
+        </div>
+    </footer>
+    <script src="scripts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const loginTab = document.getElementById('login-tab');
+            const registerTab = document.getElementById('register-tab');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const switchToRegister = document.getElementById('switch-to-register');
+            const switchToLogin = document.getElementById('switch-to-login');
+            
+            // Apply animation to Bubble logo in nav
+            const logoElement = document.querySelector('.holo-text');
+            if (logoElement) {
+                logoElement.classList.add('logo-animation');
+            }
+
+            function switchToLoginTab() {
+                registerForm.classList.add('form-slide-exit');
+                setTimeout(() => {
+                    registerForm.classList.add('hidden');
+                    registerForm.classList.remove('form-slide-exit');
+                    loginForm.classList.remove('hidden');
+                    loginForm.classList.add('form-slide-enter');
+                    setTimeout(() => {
+                        loginForm.classList.remove('form-slide-enter');
+                    }, 400);
+                }, 300);
+                
+                loginTab.classList.add('border-blue-500', 'text-blue-400', 'border-b-2');
+                registerTab.classList.remove('border-blue-500', 'text-blue-400', 'border-b-2');
+                registerTab.classList.add('text-gray-400');
+            }
+
+            function switchToRegisterTab() {
+                loginForm.classList.add('form-slide-exit');
+                setTimeout(() => {
+                    loginForm.classList.add('hidden');
+                    loginForm.classList.remove('form-slide-exit');
+                    registerForm.classList.remove('hidden');
+                    registerForm.classList.add('form-slide-enter');
+                    setTimeout(() => {
+                        registerForm.classList.remove('form-slide-enter');
+                    }, 400);
+                }, 300);
+                
+                registerTab.classList.add('border-blue-500', 'text-blue-400', 'border-b-2');
+                loginTab.classList.remove('border-blue-500', 'text-blue-400', 'border-b-2');
+                loginTab.classList.add('text-gray-400');
+            }
+
+            loginTab.addEventListener('click', switchToLoginTab);
+            registerTab.addEventListener('click', switchToRegisterTab);
+            switchToRegister.addEventListener('click', switchToRegisterTab);
+            switchToLogin.addEventListener('click', switchToLoginTab);
+
+            // Login functionality
+            document.getElementById('loginBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const feedback = document.getElementById('loginFeedback');
+                const emailInput = document.getElementById('email');
+                const passwordInput = document.getElementById('password');
+                
+                // Clear previous error indicators
+                emailInput.classList.remove('input-error');
+                passwordInput.classList.remove('input-error');
+                
+                // Validate inputs
+                let hasError = false;
+                if (!email) {
+                    emailInput.classList.add('input-error');
+                    hasError = true;
+                }
+                if (!password) {
+                    passwordInput.classList.add('input-error');
+                    hasError = true;
+                }
+                
+                if (hasError) {
+                    showFeedback(feedback, 'Please fill in all fields.', 'error');
+                    return;
+                }
+
+                // Show loading state
+                const loginBtn = document.getElementById('loginBtn');
+                const originalText = loginBtn.textContent;
+                loginBtn.textContent = 'Logging in...';
+                loginBtn.disabled = true;
+                loginBtn.style.opacity = '0.7';
+
+                try {
+                    // Use the login function from scripts.js
+                    const result = login(email, password);
+                    
+                    if (result.success) {
+                        showFeedback(feedback, 'Login successful! Redirecting...', 'success');
+                        
+                        // Redirect based on role
+                        setTimeout(() => {
+                            window.location.href = result.user.role === 'admin' ? 'admin.html' : 'dashboard.html';
+                        }, 1500);
+                    } else {
+                        showFeedback(feedback, result.message, 'error');
+                        if (result.message.includes('email')) {
+                            emailInput.classList.add('input-error');
+                        }
+                        if (result.message.includes('password')) {
+                            passwordInput.classList.add('input-error');
+                        }
+                        restoreButton(loginBtn);
+                    }
+                } catch (error) {
+                    console.error('Error during login:', error);
+                    showFeedback(feedback, 'An error occurred. Please try again.', 'error');
+                    restoreButton(loginBtn);
+                }
+            });
+
+            function restoreButton(loginBtn) {
+                loginBtn.textContent = originalText;
+                loginBtn.disabled = false;
+                loginBtn.style.opacity = '1';
+            }
+
+            // Register functionality
+            document.getElementById('registerBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                const name = document.getElementById('register-name').value;
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                const feedback = document.getElementById('registerFeedback');
+
+                if (!name || !email || !password) {
+                    showFeedback(feedback, 'Please fill in all fields.', 'error');
+                    return;
+                }
+
+                // Show loading state
+                const registerBtn = document.getElementById('registerBtn');
+                const originalText = registerBtn.textContent;
+                registerBtn.textContent = 'Creating account...';
+                registerBtn.disabled = true;
+
+                try {
+                    // Use the register function from scripts.js
+                    const result = register(name, email, password);
+                    
+                    if (result.success) {
+                        showFeedback(feedback, 'Registration successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
+                    } else {
+                        showFeedback(feedback, result.message || 'Registration failed', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showFeedback(feedback, 'An error occurred. Please try again.', 'error');
+                } finally {
+                    // Restore button state
+                    registerBtn.textContent = originalText;
+                    registerBtn.disabled = false;
+                }
+            });
+
+            function showFeedback(element, message, type) {
+                element.textContent = message;
+                element.className = `mt-4 ${type === 'error' ? 'text-red-400' : 'text-green-400'}`;
+                element.classList.remove('hidden');
+                
+                if (type === 'error') {
+                    element.classList.add('animate-shake');
+                    setTimeout(() => element.classList.remove('animate-shake'), 500);
+                }
+            }
+
+            // Add keypress event listeners for better UX
+            document.getElementById('email').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('password').focus();
+                }
+            });
+
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('loginBtn').click();
+                }
+            });
+
+            document.getElementById('register-name').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('register-email').focus();
+                }
+            });
+
+            document.getElementById('register-email').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('register-password').focus();
+                }
+            });
+
+            document.getElementById('register-password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('registerBtn').click();
+                }
+            });
+        });
+    </script>
+
+    <style>
+    .animate-shake {
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes shake {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
+    /* Tab switching animations */
+    .form-slide-enter {
+        animation: slideIn 0.4s ease forwards;
+    }
+
+    .form-slide-exit {
+        animation: slideOut 0.4s ease forwards;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+    }
+
+    /* Logo animation */
+    .logo-animation {
+        animation: pulsate 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulsate {
+        0% {
+            text-shadow: 0 0 5px rgba(66, 135, 245, 0.7), 0 0 10px rgba(111, 66, 245, 0.5);
+        }
+        100% {
+            text-shadow: 0 0 10px rgba(66, 135, 245, 0.9), 0 0 20px rgba(111, 66, 245, 0.7), 0 0 30px rgba(111, 66, 245, 0.5);
+        }
+    }
+    </style>
+</body>
+</html>

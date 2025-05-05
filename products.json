@@ -1,0 +1,66 @@
+[
+  {
+    "id": 1,
+    "name": "Custom Gear",
+    "price": 29.99,
+    "description": "Precision engineered custom gear for robotics and mechanical projects.",
+    "stock": 15,
+    "image": "images/gear.jpg",
+    "colors": ["#3B82F6", "#EC4899", "#10B981", "#F59E0B"],
+    "materials": ["PLA", "ABS", "PETG", "Resin"],
+    "modelUrl": "models/gear.glb"
+  },
+  {
+    "id": 2,
+    "name": "Drone Frame",
+    "price": 49.99,
+    "description": "Lightweight and durable drone frame for custom builds.",
+    "stock": 8,
+    "image": "images/drone-frame.jpg",
+    "colors": ["#000000", "#FFFFFF", "#FF0000", "#00FF00"],
+    "materials": ["Carbon Fiber", "Nylon", "Polycarbonate", "ABS"],
+    "modelUrl": "models/drone-frame.glb"
+  },
+  {
+    "id": 3,
+    "name": "Modular Bracket",
+    "price": 19.99,
+    "description": "Universal modular mounting bracket for various applications.",
+    "stock": 24,
+    "image": "images/bracket.jpg",
+    "colors": ["#777777", "#999999", "#BBBBBB", "#DDDDDD"],
+    "materials": ["ABS", "PLA", "TPU", "Nylon"]
+  },
+  {
+    "id": 4,
+    "name": "AHR Headphones",
+    "price": 89.99,
+    "description": "Customizable over-ear headphone frames with acoustic optimization.",
+    "stock": 5,
+    "image": "images/headphones.jpg",
+    "colors": ["#000000", "#FFFFFF", "#FF0000", "#0000FF"],
+    "materials": ["ABS", "Silicone", "Memory Foam", "Leather"],
+    "modelUrl": "models/headphones.glb"
+  },
+  {
+    "id": 5,
+    "name": "Smart Watch Case",
+    "price": 24.99,
+    "description": "Protective smart watch case with customizable design.",
+    "stock": 18,
+    "image": "images/watch-case.jpg",
+    "colors": ["#3B82F6", "#EC4899", "#10B981", "#F59E0B"],
+    "materials": ["TPU", "Silicone", "Nylon", "Resin"]
+  },
+  {
+    "id": 6,
+    "name": "Phone Stand Pro",
+    "price": 15.99,
+    "description": "Adjustable phone stand with cable management system.",
+    "stock": 30,
+    "image": "images/phone-stand.jpg",
+    "colors": ["#000000", "#FFFFFF", "#FF6B6B", "#48DBFB"],
+    "materials": ["PLA", "ABS", "PETG", "TPU"],
+    "modelUrl": "models/phone-stand.glb"
+  }
+] 

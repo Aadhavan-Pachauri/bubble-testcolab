@@ -1,0 +1,22 @@
+{
+    "users": [
+        {
+            "id": 1,
+            "email": "admin@bubble.com",
+            "password": "admin123",
+            "name": "Admin User",
+            "role": "admin",
+            "dateCreated": "2024-01-01T00:00:00.000Z",
+            "orders": []
+        },
+        {
+            "id": 2,
+            "email": "test@example.com",
+            "password": "password123",
+            "name": "Test User",
+            "role": "customer",
+            "dateCreated": "2024-01-01T00:00:00.000Z",
+            "orders": []
+        }
+    ]
+} 

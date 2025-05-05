@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble - Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .product-card {
+            transition: all 0.3s ease;
+            overflow: hidden;
+            max-height: 400px;
+            position: relative;
+            opacity: 1 !important;
+        }
+        .product-card.expanded {
+            max-height: 1200px;
+        }
+        .product-card::after {
+            content: '';
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.05);
+            pointer-events: none;
+        }
+        .product-card:hover::after {
+            display: block;
+        }
+        .color-option {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .color-option.selected {
+            border-color: white;
+            transform: scale(1.2);
+        }
+        .expand-btn {
+            transition: transform 0.3s ease;
+        }
+        .expanded .expand-btn {
+            transform: rotate(180deg);
+        }
+        .model-viewer {
+            width: 100%;
+            height: 300px;
+            background: #0f1525;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .terms-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        .ribbon {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #714B67;
+            color: white;
+            padding: 5px 10px;
+            transform: rotate(45deg) translate(20px, -15px);
+            width: 150px;
+            text-align: center;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .odoo-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #714B67;
+            color: white;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .odoo-btn:hover {
+            background: #8c5d80;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="font-sans text-white">
+    <nav class="fixed top-0 w-full z-50 holo-bg py-4">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <a href="index.html" class="text-4xl font-extrabold holo-text">Bubble</a>
+            <ul class="flex space-x-8">
+                <li><a href="index.html" class="nav-link text-lg hover:holo-text">Home</a></li>
+                <li><a href="shop.html" class="nav-link text-lg hover:holo-text active">Shop</a></li>
+                <li><a href="about.html" class="nav-link text-lg hover:holo-text">About</a></li>
+                <li><a href="support.html" class="nav-link text-lg hover:holo-text">Support</a></li>
+                <li><a href="contact.html" class="nav-link text-lg hover:holo-text">Contact Us</a></li>
+                <li><a href="cart.html" class="nav-link text-lg hover:holo-text">Cart (<span id="cart-count">0</span>)</a></li>
+                <li><a href="login.html" class="nav-link text-lg hover:holo-text">Login</a></li>
+                <li><a href="#" id="settings-btn" class="nav-link text-lg hover:holo-text">Settings</a></li>
+            </ul>
+        </div>
+    </nav>
+    <section class="pt-24 pb-20">
+        <div class="container mx-auto">
+            <h1 class="text-5xl font-extrabold holo-text text-center mb-12">Shop 3D Parts</h1>
+            <div id="products-container" class="grid grid-cols-1 md:grid-cols-3 gap-12 px-4">
+                <!-- Products will be loaded here dynamically -->
+                <div class="animate-pulse bg-gray-800 p-8 rounded-xl neon-glow">
+                    <div class="h-8 bg-gray-700 rounded mb-4"></div>
+                    <div class="h-4 bg-gray-700 rounded mb-6 w-3/4"></div>
+                    <div class="h-10 bg-gray-700 rounded"></div>
+                </div>
+                <div class="animate-pulse bg-gray-800 p-8 rounded-xl neon-glow">
+                    <div class="h-8 bg-gray-700 rounded mb-4"></div>
+                    <div class="h-4 bg-gray-700 rounded mb-6 w-3/4"></div>
+                    <div class="h-10 bg-gray-700 rounded"></div>
+                </div>
+                <div class="animate-pulse bg-gray-800 p-8 rounded-xl neon-glow">
+                    <div class="h-8 bg-gray-700 rounded mb-4"></div>
+                    <div class="h-4 bg-gray-700 rounded mb-6 w-3/4"></div>
+                    <div class="h-10 bg-gray-700 rounded"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+        <div class="relative z-10 max-w-lg mx-auto mt-20 bg-gray-800 rounded-xl neon-glow p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold holo-text">Settings</h2>
+                <button id="close-settings" class="text-2xl hover:text-blue-400">×</button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl mb-3">Theme Preferences</h3>
+                    <div class="flex items-center justify-between">
+                        <span>Dark Mode</span>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="darkModeToggle">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between mt-4">
+                        <span>Light Theme</span>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="odooLikeToggle">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl mb-3">Notifications</h3>
+                    <div class="flex items-center justify-between">
+                        <span>Email Alerts</span>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="notificationsToggle" checked>
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl mb-3">Language</h3>
+                    <select class="w-full bg-gray-700 rounded-lg p-2 border border-gray-600 text-white">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                    </select>
+                </div>
+                <button id="saveSettingsBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-purple-700">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-black py-12">
+        <div class="container mx-auto text-center">
+            <p class="text-lg mb-4">© 2025 Bubble Inc. All rights reserved.</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="text-blue-400 hover:holo-text">Twitter</a>
+                <a href="#" class="text-blue-400 hover:holo-text">Instagram</a>
+                <a href="#" class="text-blue-400 hover:holo-text">LinkedIn</a>
+            </div>
+        </div>
+    </footer>
+    <script src="scripts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load products
+            loadProducts();
+            
+            // Setup GSAP animations
+            setupAnimations();
+            
+            // Set up add to cart buttons
+            const addButtons = document.querySelectorAll('.add-to-cart');
+            addButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-id');
+                    const productName = this.getAttribute('data-name');
+                    const productPrice = parseFloat(this.getAttribute('data-price'));
+                    
+                    // Create cart item object
+                    const item = {
+                        id: productId,
+                        item: productName,
+                        price: productPrice,
+                        color: document.querySelector(`.color-select[data-product="${productId}"]`)?.value || null,
+                        material: document.querySelector(`.material-select[data-product="${productId}"]`)?.value || null
+                    };
+                    
+                    // Add to cart
+                    addToCart(item);
+                    
+                    // Update cart count in navbar
+                    updateCartCount();
+                    
+                    // Show added to cart notification
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg z-50';
+                    notification.textContent = `${productName} added to cart!`;
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 2000);
+                });
+            });
+            
+            // Settings modal functionality
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const closeSettings = document.getElementById('close-settings');
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const odooLikeToggle = document.getElementById('odooLikeToggle');
+            const notificationsToggle = document.getElementById('notificationsToggle');
+            const languageSelect = document.querySelector('#settings-modal select');
+
+            // Load saved settings
+            const settings = JSON.parse(localStorage.getItem('settings')) || {};
+            if (darkModeToggle) darkModeToggle.checked = !!settings.darkMode;
+            if (odooLikeToggle) odooLikeToggle.checked = !!settings.odooLike;
+            if (notificationsToggle) notificationsToggle.checked = settings.notifications !== false;
+            if (languageSelect && settings.language) languageSelect.value = settings.language;
+
+            // Toggle settings modal
+            if (settingsBtn && settingsModal && closeSettings) {
+                settingsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    settingsModal.classList.remove('hidden');
+                });
+                closeSettings.addEventListener('click', function() {
+                    settingsModal.classList.add('hidden');
+                });
+                settingsModal.addEventListener('click', function(e) {
+                    if (e.target === settingsModal || e.target === settingsModal.firstElementChild) {
+                        settingsModal.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Save settings
+            if (saveSettingsBtn) {
+                saveSettingsBtn.addEventListener('click', function() {
+                    const settings = {
+                        darkMode: darkModeToggle ? darkModeToggle.checked : false,
+                        odooLike: odooLikeToggle ? odooLikeToggle.checked : false,
+                        notifications: notificationsToggle ? notificationsToggle.checked : true,
+                        language: languageSelect ? languageSelect.value : 'en'
+                    };
+                    localStorage.setItem('settings', JSON.stringify(settings));
+                    if (typeof applySettings === 'function') applySettings();
+                    settingsModal.classList.add('hidden');
+                    
+                    // Show confirmation
+                    const confirmation = document.createElement('div');
+                    confirmation.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg z-50';
+                    confirmation.textContent = 'Settings saved successfully!';
+                    document.body.appendChild(confirmation);
+                    setTimeout(() => confirmation.remove(), 2000);
+                });
+            }
+        });
+        
+        function loadProducts() {
+            const db = getDatabase();
+            const productsContainer = document.getElementById('products-container');
+            
+            if (!db || !db.products || db.products.length === 0 || !productsContainer) {
+                return;
+            }
+            
+            // Clear loading placeholders
+            productsContainer.innerHTML = '';
+            
+            // Display products
+            db.products.forEach(product => {
+                const productEl = document.createElement('div');
+                productEl.className = 'bg-gray-800 p-8 rounded-xl neon-glow card-3d product-card';
+                productEl.setAttribute('data-product-id', product.id);
+                
+                // Default color and material if not set
+                const colors = product.colors || ["#3B82F6", "#EC4899", "#10B981", "#F59E0B"];
+                const materials = product.materials || ["PLA", "ABS", "PETG", "Resin"];
+                
+                // Image placeholder if not set
+                const imgUrl = product.image || `https://placehold.co/600x400/3B82F6/FFFFFF/svg?text=${encodeURIComponent(product.name)}`;
+                
+                // 3D model viewer if available
+                const modelViewer = product.has3DModel ? 
+                    `<div class="model-viewer mb-6" id="model-viewer-${product.id}">
+                        <div class="flex items-center justify-center h-full">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                            <span class="ml-3">Loading 3D Model...</span>
+                        </div>
+                     </div>` : '';
+                    
+                productEl.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h3 class="text-2xl font-semibold holo-text mb-4">${product.name}</h3>
+                        <button class="expand-btn text-gray-400 hover:text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="mb-6 text-xl font-medium text-blue-400">$${product.price}</p>
+                    <div class="mb-6 product-image-container">
+                        <img src="${imgUrl}" alt="${product.name}" class="w-full h-48 object-cover rounded-lg mb-4">
+                    </div>
+                    <p class="mb-6 product-description">${product.description}</p>
+                    
+                    ${modelViewer}
+                    
+                    <div class="product-options hidden mb-8">
+                        <div class="mb-6">
+                            <h4 class="text-sm font-medium mb-2">Select Color:</h4>
+                            <div class="flex space-x-3">
+                                ${colors.map((color, index) => `
+                                    <div class="color-option ${index === 0 ? 'selected' : ''}" 
+                                         style="background-color: ${color};" 
+                                         data-color="${color}"></div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-sm font-medium mb-2">Select Material:</h4>
+                            <div class="flex flex-wrap gap-2">
+                                ${materials.map((material, index) => `
+                                    <label class="flex items-center">
+                                        <input type="radio" name="material-${product.id}" 
+                                               value="${material}" 
+                                               class="hidden material-radio" 
+                                               ${index === 0 ? 'checked' : ''}>
+                                        <span class="px-3 py-1 text-sm bg-gray-700 rounded-full cursor-pointer 
+                                                    material-btn ${index === 0 ? 'bg-blue-500' : ''}">${material}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-sm font-medium mb-2">Quantity:</h4>
+                            <div class="flex items-center">
+                                <button class="qty-btn minus bg-gray-700 px-3 py-1 rounded-l-lg">-</button>
+                                <input type="number" value="1" min="1" max="${product.stock}" 
+                                       class="qty-input bg-gray-600 border-0 text-center w-16 py-1">
+                                <button class="qty-btn plus bg-gray-700 px-3 py-1 rounded-r-lg">+</button>
+                                <span class="ml-3 text-sm text-gray-400">${product.stock} in stock</span>
+                            </div>
+                        </div>
+                        
+                        <div class="terms-box">
+                            <h4 class="font-medium mb-1">Terms and Conditions</h4>
+                            <ul class="list-disc pl-5 text-gray-300 space-y-1">
+                                <li>30-day money-back guarantee</li>
+                                <li>Shipping: 2-3 Business Days</li>
+                                <li>For custom designs, please contact us</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <button class="add-to-cart w-full bg-blue-500 text-white px-6 py-3 rounded-full neon-glow hover:bg-blue-600 transition-all duration-300" 
+                            data-item="${product.name}" 
+                            data-price="${product.price}"
+                            data-id="${product.id}">
+                        Add to Cart
+                    </button>
+                `;
+                
+                productsContainer.appendChild(productEl);
+                
+                // If product has 3D model, initialize it
+                if (product.has3DModel && product.modelUrl) {
+                    initializeModelViewer(product.id, product.modelUrl);
+                }
+                
+                // Add event listeners to the product card
+                const expandBtn = productEl.querySelector('.expand-btn');
+                expandBtn.addEventListener('click', function() {
+                    productEl.classList.toggle('expanded');
+                    const options = productEl.querySelector('.product-options');
+                    options.classList.toggle('hidden');
+                    
+                    // Trigger GSAP animation for smooth reveal
+                    if (productEl.classList.contains('expanded')) {
+                        gsap.fromTo(options, {opacity: 0, y: -20}, {opacity: 1, y: 0, duration: 0.3});
+                    }
+                });
+                
+                // Color selection
+                const colorOptions = productEl.querySelectorAll('.color-option');
+                colorOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        colorOptions.forEach(o => o.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+                });
+                
+                // Material selection
+                const materialBtns = productEl.querySelectorAll('.material-btn');
+                const materialRadios = productEl.querySelectorAll('.material-radio');
+                materialBtns.forEach((btn, index) => {
+                    btn.addEventListener('click', function() {
+                        materialBtns.forEach(b => b.classList.remove('bg-blue-500'));
+                        materialRadios[index].checked = true;
+                        btn.classList.add('bg-blue-500');
+                    });
+                });
+                
+                // Quantity buttons
+                const minusBtn = productEl.querySelector('.qty-btn.minus');
+                const plusBtn = productEl.querySelector('.qty-btn.plus');
+                const qtyInput = productEl.querySelector('.qty-input');
+                
+                minusBtn.addEventListener('click', function() {
+                    let value = parseInt(qtyInput.value);
+                    if (value > 1) {
+                        qtyInput.value = value - 1;
+                    }
+                });
+                
+                plusBtn.addEventListener('click', function() {
+                    let value = parseInt(qtyInput.value);
+                    if (value < product.stock) {
+                        qtyInput.value = value + 1;
+                    }
+                });
+            });
+        }
+
+        // Initialize 3D model viewer for a product
+        function initializeModelViewer(productId, modelUrl) {
+            const containerId = `model-viewer-${productId}`;
+            const container = document.getElementById(containerId);
+            
+            if (!container) return;
+            
+            // Create scene, camera and renderer
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0f1525);
+            
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 5, 10);
+            
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            
+            // Clear container and add renderer
+            container.innerHTML = '';
+            container.appendChild(renderer.domElement);
+            
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+            
+            // Add controls
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.rotateSpeed = 0.7;
+            
+            // Load 3D model
+            const loader = new THREE.GLTFLoader();
+            
+            loader.load(
+                modelUrl,
+                function(gltf) {
+                    const model = gltf.scene;
+                    
+                    // Adjust model position and size
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 5 / maxDim;
+                    model.scale.multiplyScalar(scale);
+                    
+                    model.position.sub(center.multiplyScalar(scale));
+                    model.position.y -= size.y * scale / 2;
+                    
+                    scene.add(model);
+                    
+                    // Auto-rotate
+                    const autoRotate = function() {
+                        model.rotation.y += 0.005;
+                        renderer.render(scene, camera);
+                        controls.update();
+                        requestAnimationFrame(autoRotate);
+                    };
+                    
+                    autoRotate();
+                },
+                function(xhr) {
+                    // Progress callback
+                    const percent = Math.floor((xhr.loaded / xhr.total) * 100);
+                    if (percent < 100) {
+                        container.innerHTML = `
+                            <div class="flex items-center justify-center h-full">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                                <span class="ml-3">Loading 3D Model: ${percent}%</span>
+                            </div>
+                        `;
+                    }
+                },
+                function(error) {
+                    console.error('Error loading 3D model:', error);
+                    container.innerHTML = `
+                        <div class="flex items-center justify-center h-full">
+                            <p class="text-red-500">Failed to load 3D model</p>
+                        </div>
+                    `;
+                }
+            );
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+        
+        function setupAnimations() {
+            if (typeof gsap !== 'undefined') {
+                // Stagger animation for products
+                gsap.from('.product-card', {
+                    y: 50,
+                    opacity: 0,
+                    duration: 0.8,
+                    stagger: 0.2,
+                    ease: 'power2.out',
+                    onComplete: () => {
+                        gsap.set('.product-card', {opacity: 1, y: 0});
+                    }
+                });
+                
+                // Hover animations for cards
+                document.querySelectorAll('.product-card').forEach(card => {
+                    card.addEventListener('mouseenter', function() {
+                        gsap.to(this, {
+                            y: -10,
+                            duration: 0.3,
+                            boxShadow: '0 10px 30px rgba(59, 130, 246, 0.3)'
+                        });
+                    });
+                    
+                    card.addEventListener('mouseleave', function() {
+                        gsap.to(this, {
+                            y: 0,
+                            duration: 0.3,
+                            boxShadow: '0 4px 20px rgba(0, 100, 255, 0.15)'
+                        });
+                    });
+                });
+            }
+        }
+
+        function saveDatabase(db) {
+            localStorage.setItem('db', JSON.stringify(db));
+        }
+
+        // Cart helper functions if not already defined in scripts.js
+        function addToCart(item) {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.push(item);
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartCountElements = document.querySelectorAll('#cart-count');
+            cartCountElements.forEach(element => {
+                element.textContent = cart.length;
+            });
+        }
+    </script>
+</body>
+</html>

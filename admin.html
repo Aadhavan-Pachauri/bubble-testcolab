@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="font-sans text-white">
+    <nav class="fixed top-0 w-full z-50 holo-bg py-4">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <a href="index.html" class="text-4xl font-extrabold holo-text">Bubble</a>
+            <ul class="flex space-x-8">
+                <li><a href="index.html" class="nav-link text-lg hover:holo-text">Home</a></li>
+                <li><a href="shop.html" class="nav-link text-lg hover:holo-text">Shop</a></li>
+                <li><a href="about.html" class="nav-link text-lg hover:holo-text">About</a></li>
+                <li><a href="support.html" class="nav-link text-lg hover:holo-text">Support</a></li>
+                <li><a href="contact.html" class="nav-link text-lg hover:holo-text">Contact Us</a></li>
+                <li><a href="cart.html" class="nav-link text-lg hover:holo-text">Cart (<span id="cart-count">0</span>)</a></li>
+                <li><a href="login.html" class="nav-link text-lg hover:holo-text">Login</a></li>
+                <li><a href="#" id="settings-btn" class="nav-link text-lg hover:holo-text">Settings</a></li>
+            </ul>
+        </div>
+    </nav>
+    <section class="pt-24 pb-20">
+        <div class="container mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-5xl font-extrabold holo-text">Admin Dashboard</h1>
+                <span class="px-4 py-2 bg-purple-900 text-purple-300 rounded-full text-sm">Admin Access</span>
+            </div>
+            
+            <!-- Dashboard Tabs -->
+            <div class="mb-8 border-b border-gray-700">
+                <div class="flex">
+                    <button data-tab="products" class="dashboard-tab active px-6 py-3 text-lg font-medium border-b-2 border-blue-500 text-blue-400">Products</button>
+                    <button data-tab="users" class="dashboard-tab px-6 py-3 text-lg font-medium text-gray-400 hover:text-white">Users</button>
+                    <button data-tab="orders" class="dashboard-tab px-6 py-3 text-lg font-medium text-gray-400 hover:text-white">Orders</button>
+                    <button data-tab="messages" class="dashboard-tab px-6 py-3 text-lg font-medium text-gray-400 hover:text-white">Messages</button>
+                </div>
+            </div>
+            
+            <!-- Dashboard Content -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Sidebar -->
+                <div class="md:col-span-1">
+                    <div class="bg-gray-800 p-6 rounded-xl neon-glow mb-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-2xl font-bold mr-4">A</div>
+                            <div>
+                                <h3 class="text-xl font-semibold">Admin User</h3>
+                                <p class="text-gray-400 text-sm">admin@bubble.com</p>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-700 pt-4 mt-4">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Products</span>
+                                <span id="product-count" class="text-blue-400">0</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Users</span>
+                                <span id="user-count" class="text-blue-400">0</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-400">Orders</span>
+                                <span id="order-count" class="text-blue-400">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Messages</span>
+                                <span id="message-count" class="text-blue-400">0</span>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-700 pt-4 mt-4">
+                            <button id="resetDatabaseBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg w-full hover:bg-red-600">Reset Database</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Add New Product Form -->
+                    <div class="bg-gray-800 p-6 rounded-xl neon-glow">
+                        <h3 class="text-xl font-semibold holo-text mb-4">Add New Product</h3>
+                        <div>
+                            <label for="productName" class="block text-sm mb-1">Product Name*</label>
+                            <input id="productName" type="text" class="w-full p-2 rounded bg-gray-700 text-white mb-3 focus:ring-2 focus:ring-blue-400" placeholder="Product name">
+                            
+                            <label for="productPrice" class="block text-sm mb-1">Price ($)*</label>
+                            <input id="productPrice" type="number" class="w-full p-2 rounded bg-gray-700 text-white mb-3 focus:ring-2 focus:ring-blue-400" placeholder="Price">
+                            
+                            <label for="productDesc" class="block text-sm mb-1">Description</label>
+                            <textarea id="productDesc" class="w-full p-2 rounded bg-gray-700 text-white mb-3 focus:ring-2 focus:ring-blue-400" placeholder="Product description" rows="3"></textarea>
+                            
+                            <label for="productStock" class="block text-sm mb-1">Stock</label>
+                            <input id="productStock" type="number" class="w-full p-2 rounded bg-gray-700 text-white mb-3 focus:ring-2 focus:ring-blue-400" placeholder="Stock quantity">
+                            
+                            <label for="productImage" class="block text-sm mb-1">Image URL</label>
+                            <input id="productImage" type="text" class="w-full p-2 rounded bg-gray-700 text-white mb-4 focus:ring-2 focus:ring-blue-400" placeholder="Image URL (optional)">
+                            
+                            <button id="addProduct" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg neon-glow hover:from-blue-600 hover:to-purple-700 w-full">Add Product</button>
+                            <p id="adminFeedback" class="mt-4 hidden"></p>
+                            <p class="text-xs text-gray-400 mt-2">* Required fields</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="md:col-span-2">
+                    <!-- Products Tab Content -->
+                    <div id="products-content" class="dashboard-content">
+                        <div class="flex justify-between mb-4">
+                            <h2 class="text-2xl font-semibold">Manage Products</h2>
+                            <div class="flex space-x-2">
+                                <input type="text" placeholder="Search products..." class="p-2 rounded bg-gray-700 text-white">
+                                <select class="p-2 rounded bg-gray-700 text-white">
+                                    <option>All Categories</option>
+                                    <option>Mechanical</option>
+                                    <option>Electronics</option>
+                                    <option>Models</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="adminProducts" class="space-y-4 max-h-[600px] overflow-y-auto pr-4">
+                            <!-- Products will be loaded here dynamically -->
+                            <div class="text-center text-gray-400 py-20">Loading products...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Users Tab Content -->
+                    <div id="users-content" class="dashboard-content hidden">
+                        <div class="flex justify-between mb-4">
+                            <h2 class="text-2xl font-semibold">Manage Users</h2>
+                            <input type="text" placeholder="Search users..." class="p-2 rounded bg-gray-700 text-white">
+                        </div>
+                        
+                        <div id="adminUsers" class="space-y-4 max-h-[600px] overflow-y-auto pr-4">
+                            <!-- Users will be loaded here dynamically -->
+                            <div class="text-center text-gray-400 py-20">Loading users...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Orders Tab Content -->
+                    <div id="orders-content" class="dashboard-content hidden">
+                        <div class="flex justify-between mb-4">
+                            <h2 class="text-2xl font-semibold">Order Management</h2>
+                            <div class="flex space-x-2">
+                                <input type="text" placeholder="Search orders..." class="p-2 rounded bg-gray-700 text-white">
+                                <select class="p-2 rounded bg-gray-700 text-white">
+                                    <option>All Status</option>
+                                    <option>Pending</option>
+                                    <option>Shipped</option>
+                                    <option>Delivered</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="adminOrders" class="space-y-4 max-h-[600px] overflow-y-auto pr-4">
+                            <!-- Orders will be loaded here dynamically -->
+                            <div class="text-center text-gray-400 py-20">Loading orders...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Messages Tab Content -->
+                    <div id="messages-content" class="dashboard-content hidden">
+                        <div class="flex justify-between mb-4">
+                            <h2 class="text-2xl font-semibold">Customer Messages</h2>
+                            <div class="flex space-x-2">
+                                <input type="text" placeholder="Search messages..." class="p-2 rounded bg-gray-700 text-white">
+                                <select class="p-2 rounded bg-gray-700 text-white">
+                                    <option>All Messages</option>
+                                    <option>Unread</option>
+                                    <option>Read</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="adminMessages" class="space-y-4 max-h-[600px] overflow-y-auto pr-4">
+                            <!-- Messages will be loaded here dynamically -->
+                            <div class="text-center text-gray-400 py-20">Loading messages...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+        <div class="relative z-10 max-w-lg mx-auto mt-20 bg-gray-800 rounded-xl neon-glow p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold holo-text">Settings</h2>
+                <button id="close-settings" class="text-2xl hover:text-blue-400">×</button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl mb-3">Theme Preferences</h3>
+                    <div class="flex items-center justify-between">
+                        <span>Dark Mode</span>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="darkModeToggle">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between mt-4">
+                        <span>Light Theme</span>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="odooLikeToggle">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl mb-3">Notifications</h3>
+                    <div class="flex items-center justify-between">
+                        <span>Email Alerts</span>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="notificationsToggle" checked>
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl mb-3">Language</h3>
+                    <select class="w-full bg-gray-700 rounded-lg p-2 border border-gray-600 text-white">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                    </select>
+                </div>
+                <button id="saveSettingsBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-purple-700">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-black py-12">
+        <div class="container mx-auto text-center">
+            <p class="text-lg mb-4">© 2025 Bubble Inc. All rights reserved.</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="text-blue-400 hover:holo-text">Twitter</a>
+                <a href="#" class="text-blue-400 hover:holo-text">Instagram</a>
+                <a href="#" class="text-blue-400 hover:holo-text">LinkedIn</a>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="scripts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Settings modal functionality
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const closeSettings = document.getElementById('close-settings');
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const odooLikeToggle = document.getElementById('odooLikeToggle');
+            const notificationsToggle = document.getElementById('notificationsToggle');
+            const languageSelect = document.querySelector('#settings-modal select');
+
+            // Load saved settings
+            const settings = JSON.parse(localStorage.getItem('settings')) || {};
+            if (darkModeToggle) darkModeToggle.checked = !!settings.darkMode;
+            if (odooLikeToggle) odooLikeToggle.checked = !!settings.odooLike;
+            if (notificationsToggle) notificationsToggle.checked = settings.notifications !== false;
+            if (languageSelect && settings.language) languageSelect.value = settings.language;
+
+            // Toggle settings modal
+            if (settingsBtn && settingsModal && closeSettings) {
+                settingsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    settingsModal.classList.remove('hidden');
+                });
+                closeSettings.addEventListener('click', function() {
+                    settingsModal.classList.add('hidden');
+                });
+                settingsModal.addEventListener('click', function(e) {
+                    if (e.target === settingsModal || e.target === settingsModal.firstElementChild) {
+                        settingsModal.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Save settings
+            if (saveSettingsBtn) {
+                saveSettingsBtn.addEventListener('click', function() {
+                    const settings = {
+                        darkMode: darkModeToggle ? darkModeToggle.checked : false,
+                        odooLike: odooLikeToggle ? odooLikeToggle.checked : false,
+                        notifications: notificationsToggle ? notificationsToggle.checked : true,
+                        language: languageSelect ? languageSelect.value : 'en'
+                    };
+                    localStorage.setItem('settings', JSON.stringify(settings));
+                    if (typeof applySettings === 'function') applySettings();
+                    settingsModal.classList.add('hidden');
+                    
+                    // Show confirmation
+                    const confirmation = document.createElement('div');
+                    confirmation.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg z-50';
+                    confirmation.textContent = 'Settings saved successfully!';
+                    document.body.appendChild(confirmation);
+                    setTimeout(() => confirmation.remove(), 2000);
+                });
+            }
+            
+            // Admin specific functionality
+            // Check if user is admin
+            const currentUser = getCurrentUser();
+            if (!currentUser || currentUser.role !== 'admin') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Tab switching functionality
+            const tabs = document.querySelectorAll('.dashboard-tab');
+            const contents = document.querySelectorAll('.dashboard-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => {
+                        t.classList.remove('active', 'border-blue-500', 'text-blue-400', 'border-b-2');
+                        t.classList.add('text-gray-400');
+                    });
+                    
+                    // Hide all contents
+                    contents.forEach(c => c.classList.add('hidden'));
+                    
+                    // Add active class to clicked tab
+                    tab.classList.add('active', 'border-blue-500', 'text-blue-400', 'border-b-2');
+                    tab.classList.remove('text-gray-400');
+                    
+                    // Show corresponding content
+                    const tabName = tab.getAttribute('data-tab');
+                    document.getElementById(`${tabName}-content`).classList.remove('hidden');
+                });
+            });
+            
+            // Load admin dashboard data
+            loadAdminDashboard();
+            
+            // Add Product functionality
+            const addProductBtn = document.getElementById('addProduct');
+            const productNameInput = document.getElementById('productName');
+            const productPriceInput = document.getElementById('productPrice');
+            const productDescInput = document.getElementById('productDesc');
+            const productStockInput = document.getElementById('productStock');
+            const productImageInput = document.getElementById('productImage');
+            const adminFeedback = document.getElementById('adminFeedback');
+            
+            if (addProductBtn) {
+                addProductBtn.addEventListener('click', function() {
+                    // Validate inputs
+                    if (!productNameInput.value || !productPriceInput.value) {
+                        showAdminFeedback('Please fill in all required fields.', 'error');
+                        return;
+                    }
+                    
+                    // Create new product
+                    const newProduct = {
+                        id: Date.now(),
+                        name: productNameInput.value,
+                        price: parseFloat(productPriceInput.value),
+                        description: productDescInput.value || 'No description provided.',
+                        stock: parseInt(productStockInput.value) || 0,
+                        image: productImageInput.value || `https://placehold.co/600x400/3B82F6/FFFFFF/svg?text=${encodeURIComponent(productNameInput.value)}`,
+                        colors: ['#3B82F6'],
+                        materials: ['Standard']
+                    };
+                    
+                    // Get database
+                    const db = getDatabase();
+                    
+                    // Add product to database
+                    db.products.push(newProduct);
+                    
+                    // Save database
+                    saveDatabase(db);
+                    
+                    // Show success message
+                    showAdminFeedback('Product added successfully!', 'success');
+                    
+                    // Reset form
+                    productNameInput.value = '';
+                    productPriceInput.value = '';
+                    productDescInput.value = '';
+                    productStockInput.value = '';
+                    productImageInput.value = '';
+                    
+                    // Reload dashboard
+                    loadAdminDashboard();
+                    
+                    // Update product count
+                    document.getElementById('product-count').textContent = db.products.length;
+                });
+            }
+            
+            // Reset database functionality
+            const resetDatabaseBtn = document.getElementById('resetDatabaseBtn');
+            if (resetDatabaseBtn) {
+                resetDatabaseBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to reset the database? This will restore all default products and users but remove any custom data.')) {
+                        resetDatabase();
+                        showAdminFeedback('Database reset successfully!', 'success');
+                        loadAdminDashboard();
+                    }
+                });
+            }
+            
+            function showAdminFeedback(message, type) {
+                adminFeedback.textContent = message;
+                adminFeedback.className = `mt-4 ${type === 'error' ? 'text-red-400' : 'text-green-400'}`;
+                adminFeedback.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    adminFeedback.classList.add('hidden');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

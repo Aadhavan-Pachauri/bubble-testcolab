@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble - Cart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="font-sans text-white">
+    <nav class="fixed top-0 w-full z-50 holo-bg py-4">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <a href="index.html" class="text-4xl font-extrabold holo-text">Bubble</a>
+            <ul class="flex space-x-8">
+                <li><a href="index.html" class="nav-link text-lg hover:holo-text">Home</a></li>
+                <li><a href="shop.html" class="nav-link text-lg hover:holo-text">Shop</a></li>
+                <li><a href="about.html" class="nav-link text-lg hover:holo-text">About</a></li>
+                <li><a href="support.html" class="nav-link text-lg hover:holo-text">Support</a></li>
+                <li><a href="contact.html" class="nav-link text-lg hover:holo-text">Contact Us</a></li>
+                <li><a href="cart.html" class="nav-link text-lg hover:holo-text active">Cart (<span id="cart-count">0</span>)</a></li>
+                <li><a href="login.html" class="nav-link text-lg hover:holo-text">Login</a></li>
+                <li><a href="#" id="settings-btn" class="nav-link text-lg hover:holo-text">Settings</a></li>
+            </ul>
+        </div>
+    </nav>
+    <section class="pt-24 pb-20">
+        <div class="container mx-auto">
+            <h1 class="text-5xl font-extrabold holo-text text-center mb-12">Your Cart</h1>
+            <div id="cart-items" class="bg-gray-800 p-8 rounded-xl neon-glow max-w-2xl mx-auto">
+                <p id="cart-empty" class="text-lg">Your cart is empty.</p>
+            </div>
+            <div class="max-w-2xl mx-auto mt-8 text-right">
+                <p class="text-xl mb-4">Total: $<span id="cart-total">0</span></p>
+                <div class="flex justify-between">
+                    <button id="clear-cart" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600">Clear Cart</button>
+                    <a href="login.html" class="inline-block bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-full neon-glow hover:from-blue-600 hover:to-purple-700">Checkout</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black" style="background-color: rgba(0, 0, 0, 0.5);"></div>
+        <div class="relative z-10 max-w-lg mx-auto mt-20 bg-gray-800 rounded-xl neon-glow p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold holo-text">Settings</h2>
+                <button id="close-settings" class="text-2xl hover:text-blue-400">×</button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl mb-3">Theme Preferences</h3>
+                    <div class="flex items-center justify-between">
+                        <span>Dark Mode</span>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="darkModeToggle">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between mt-4">
+                        <span>Light Theme</span>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="odooLikeToggle">
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl mb-3">Notifications</h3>
+                    <div class="flex items-center justify-between">
+                        <span>Email Alerts</span>
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="notificationsToggle" checked>
+                            <span class="settings-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl mb-3">Language</h3>
+                    <select class="w-full bg-gray-700 rounded-lg p-2 border border-gray-600 text-white">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                    </select>
+                </div>
+                <button id="saveSettingsBtn" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-purple-700">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-black py-12">
+        <div class="container mx-auto text-center">
+            <p class="text-lg mb-4">© 2025 Bubble Inc. All rights reserved.</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="text-blue-400 hover:holo-text">Twitter</a>
+                <a href="#" class="text-blue-400 hover:holo-text">Instagram</a>
+                <a href="#" class="text-blue-400 hover:holo-text">LinkedIn</a>
+            </div>
+        </div>
+    </footer>
+    <script src="scripts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Settings modal functionality
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const closeSettings = document.getElementById('close-settings');
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const odooLikeToggle = document.getElementById('odooLikeToggle');
+            const notificationsToggle = document.getElementById('notificationsToggle');
+            const languageSelect = document.querySelector('#settings-modal select');
+
+            // Load saved settings
+            const settings = JSON.parse(localStorage.getItem('settings')) || {};
+            if (darkModeToggle) darkModeToggle.checked = !!settings.darkMode;
+            if (odooLikeToggle) odooLikeToggle.checked = !!settings.odooLike;
+            if (notificationsToggle) notificationsToggle.checked = settings.notifications !== false;
+            if (languageSelect && settings.language) languageSelect.value = settings.language;
+
+            // Toggle settings modal
+            if (settingsBtn && settingsModal && closeSettings) {
+                settingsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    settingsModal.classList.remove('hidden');
+                });
+                closeSettings.addEventListener('click', function() {
+                    settingsModal.classList.add('hidden');
+                });
+                settingsModal.addEventListener('click', function(e) {
+                    if (e.target === settingsModal || e.target === settingsModal.firstElementChild) {
+                        settingsModal.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Save settings
+            if (saveSettingsBtn) {
+                saveSettingsBtn.addEventListener('click', function() {
+                    const settings = {
+                        darkMode: darkModeToggle ? darkModeToggle.checked : false,
+                        odooLike: odooLikeToggle ? odooLikeToggle.checked : false,
+                        notifications: notificationsToggle ? notificationsToggle.checked : true,
+                        language: languageSelect ? languageSelect.value : 'en'
+                    };
+                    localStorage.setItem('settings', JSON.stringify(settings));
+                    if (typeof applySettings === 'function') applySettings();
+                    settingsModal.classList.add('hidden');
+                    
+                    // Show confirmation
+                    const confirmation = document.createElement('div');
+                    confirmation.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg z-50';
+                    confirmation.textContent = 'Settings saved successfully!';
+                    document.body.appendChild(confirmation);
+                    setTimeout(() => confirmation.remove(), 2000);
+                });
+            }
+
+            // Cart functionality 
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartEmptyMessage = document.getElementById('cart-empty');
+            const cartTotalElement = document.getElementById('cart-total');
+            
+            function renderCart() {
+                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                
+                if (cart.length === 0) {
+                    cartEmptyMessage.classList.remove('hidden');
+                    cartTotalElement.textContent = '0.00';
+                    return;
+                }
+                
+                cartEmptyMessage.classList.add('hidden');
+                let total = 0;
+                cartItemsContainer.innerHTML = '';
+                
+                // Get the database to look up product names
+                const db = getDatabase();
+                
+                cart.forEach((item, index) => {
+                    const itemPrice = parseFloat(item.price);
+                    total += itemPrice;
+                    
+                    // Try to get the product name from the database
+                    let productName = item.item || "Product";
+                    let productColor = "";
+                    let productMaterial = "";
+                    
+                    if (item.productId && db?.products) {
+                        const product = db.products.find(p => p.id === item.productId);
+                        if (product) {
+                            productName = product.name;
+                            if (product.colors && product.colors.length > 0) {
+                                productColor = product.colors[0];
+                            }
+                            if (product.materials && product.materials.length > 0) {
+                                productMaterial = product.materials[0];
+                            }
+                        }
+                    }
+                    
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'flex justify-between items-center p-4 bg-gray-700 rounded-lg mb-4';
+                    itemEl.innerHTML = `
+                        <div>
+                            <h3 class="text-lg font-medium">${productName}</h3>
+                            <p class="text-sm text-gray-400">
+                                ${productColor ? `Color: <span style="color: ${productColor}">${productColor}</span>` : ''}
+                                ${productMaterial ? `Material: ${productMaterial}` : ''}
+                            </p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="mr-4">$${itemPrice.toFixed(2)}</span>
+                            <button class="remove-item text-red-400 hover:text-red-600" data-index="${index}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    cartItemsContainer.appendChild(itemEl);
+                });
+                
+                cartTotalElement.textContent = total.toFixed(2);
+            }
+            
+            // Handle remove item clicks
+            cartItemsContainer.addEventListener('click', function(e) {
+                const removeBtn = e.target.closest('.remove-item');
+                if (removeBtn) {
+                    const index = parseInt(removeBtn.getAttribute('data-index'));
+                    removeFromCart(index);
+                    renderCart();
+                    
+                    // Update cart count in navbar
+                    if (typeof updateCartCount === 'function') {
+                        updateCartCount();
+                    }
+                }
+            });
+            
+            // Clear cart button
+            const clearCartBtn = document.getElementById('clear-cart');
+            if (clearCartBtn) {
+                clearCartBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to clear your cart?')) {
+                        clearCart();
+                        renderCart();
+                        
+                        // Show confirmation
+                        const confirmation = document.createElement('div');
+                        confirmation.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg z-50';
+                        confirmation.textContent = 'Cart cleared!';
+                        document.body.appendChild(confirmation);
+                        setTimeout(() => confirmation.remove(), 2000);
+                    }
+                });
+            }
+            
+            // Initial render
+            renderCart();
+        });
+    </script>
+</body>
+</html>
