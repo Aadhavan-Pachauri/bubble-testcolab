@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if user is logged in and update UI accordingly
     updateAuthUI();
 
+    // Update navigation menu
+    updateNavigationMenu();
+
     const settingsBtn = document.getElementById('settings-btn');
     const settingsModal = document.getElementById('settings-modal');
     const closeSettings = document.getElementById('close-settings');
@@ -164,17 +167,77 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Navigation
-    document.querySelectorAll('.nav-link').forEach(link => {
-        if (link.getAttribute('href') !== '#') {
-            // Do not add event listener to the settings button
-            if (!link.id || link.id !== 'settings-btn') {
-                link.addEventListener('click', (e) => {
-                    // For regular links just allow them to work normally
-                });
+    // Enhanced hamburger menu functionality
+    const hamburgerBtn = document.querySelector('.mobile-menu-btn');
+    const navLinks = document.querySelector('.nav-links');
+    const body = document.body;
+
+    if (hamburgerBtn && navLinks) {
+        // Set initial ARIA attributes
+        hamburgerBtn.setAttribute('aria-label', 'Open main menu');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        hamburgerBtn.setAttribute('aria-controls', 'mobile-menu');
+        navLinks.id = 'mobile-menu';
+        navLinks.setAttribute('aria-hidden', 'true');
+
+        hamburgerBtn.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            this.classList.toggle('active');
+            navLinks.classList.toggle('active');
+            body.classList.toggle('menu-open');
+            
+            // Update ARIA attributes
+            this.setAttribute('aria-expanded', !isExpanded);
+            this.setAttribute('aria-label', isExpanded ? 'Open main menu' : 'Close main menu');
+            navLinks.setAttribute('aria-hidden', isExpanded);
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!hamburgerBtn.contains(e.target) && !navLinks.contains(e.target)) {
+                hamburgerBtn.classList.remove('active');
+                navLinks.classList.remove('active');
+                body.classList.remove('menu-open');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+                hamburgerBtn.setAttribute('aria-label', 'Open main menu');
+                navLinks.setAttribute('aria-hidden', 'true');
             }
-        }
-    });
+        });
+
+        // Handle keyboard navigation and escape key
+        navLinks.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                hamburgerBtn.classList.remove('active');
+                navLinks.classList.remove('active');
+                body.classList.remove('menu-open');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+                hamburgerBtn.setAttribute('aria-label', 'Open main menu');
+                navLinks.setAttribute('aria-hidden', 'true');
+                hamburgerBtn.focus();
+            }
+        });
+
+        // Trap focus within menu when open
+        navLinks.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                const focusableElements = navLinks.querySelectorAll('a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])');
+                const firstFocusable = focusableElements[0];
+                const lastFocusable = focusableElements[focusableElements.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === firstFocusable) {
+                        lastFocusable.focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    if (document.activeElement === lastFocusable) {
+                        firstFocusable.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+        });
+    }
 
     // Cart Functionality
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -503,7 +566,219 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
     }
+
+    // Check if we're on the gig page
+    if (window.location.pathname.includes('gig.html')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = parseInt(urlParams.get('id'));
+        
+        if (productId) {
+            const db = getDatabase();
+            const product = db.products.find(p => p.id === productId);
+            
+            if (product) {
+                const productDetails = document.getElementById('product-details');
+                if (productDetails) {
+                    productDetails.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <img src="${product.image}" alt="${product.name}" class="w-full rounded-lg mb-4 object-cover aspect-square">
+                                ${product.modelUrl ? `
+                                    <div id="model-viewer-${product.id}" class="w-full h-64 rounded-lg bg-gray-800 mt-4">
+                                        <h3 class="text-xl font-semibold mb-2 p-4">3D Model Preview</h3>
+                                        <!-- 3D viewer will be initialized here -->
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div>
+                                <h1 class="text-4xl font-bold mb-4">${product.name}</h1>
+                                <div class="flex items-center mb-6">
+                                    <span class="text-3xl font-bold text-blue-400">$${product.price.toFixed(2)}</span>
+                                    <span class="ml-4 text-gray-400">${product.stock} in stock</span>
+                                </div>
+                                <p class="text-lg mb-8">${product.description}</p>
+                                <div class="mb-6">
+                                    <h3 class="text-xl font-semibold mb-3">Available Materials:</h3>
+                                    <div class="flex flex-wrap gap-2">
+                                        ${product.materials.map(material => `
+                                            <span class="bg-gray-700 px-4 py-2 rounded-full text-sm">${material}</span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <div class="mb-8">
+                                    <h3 class="text-xl font-semibold mb-3">Available Colors:</h3>
+                                    <div class="flex flex-wrap gap-3">
+                                        ${product.colors.map(color => `
+                                            <button class="w-10 h-10 rounded-full focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                    style="background-color: ${color};"
+                                                    aria-label="Select color ${color}"></button>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <button class="add-to-cart w-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+                                            data-id="${product.id}"
+                                            data-item="${product.name}"
+                                            data-price="${product.price}">
+                                        Add to Cart
+                                    </button>
+                                    <a href="advanced-settings.html" class="block w-full text-center bg-gray-700 hover:bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+                                        Customize Print Settings
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Get and display related products
+                    const relatedProducts = getRelatedProducts(product);
+                    const relatedContainer = document.getElementById('related-products');
+                    
+                    if (relatedContainer) {
+                        relatedContainer.innerHTML = relatedProducts.map(related => `
+                            <div class="bg-gray-800 rounded-xl neon-glow p-6 transform transition-transform hover:scale-105">
+                                <img src="${related.image}" alt="${related.name}" class="w-full h-48 object-cover rounded-lg mb-4">
+                                <h3 class="text-xl font-semibold mb-2">${related.name}</h3>
+                                <p class="text-gray-300 mb-4">${related.description}</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-2xl font-bold holo-text">$${related.price.toFixed(2)}</span>
+                                    <button onclick="showProductDetails(${related.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+
+                    // Initialize 3D model viewer if available
+                    if (product.modelUrl && typeof THREE !== 'undefined') {
+                        const container = document.getElementById(`model-viewer-${product.id}`);
+                        if (container) {
+                            // Basic Three.js scene setup
+                            const scene = new THREE.Scene();
+                            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+                            const renderer = new THREE.WebGLRenderer({ antialias: true });
+                            
+                            renderer.setSize(container.clientWidth, container.clientHeight);
+                            container.appendChild(renderer.domElement);
+                            
+                            // Add ambient light
+                            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                            scene.add(ambientLight);
+                            
+                            // Add directional light
+                            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                            directionalLight.position.set(2, 2, 2);
+                            scene.add(directionalLight);
+                            
+                            // Load 3D model
+                            const loader = new THREE.GLTFLoader();
+                            loader.load(product.modelUrl, function(gltf) {
+                                scene.add(gltf.scene);
+                                
+                                // Center the model
+                                const box = new THREE.Box3().setFromObject(gltf.scene);
+                                const center = box.getCenter(new THREE.Vector3());
+                                gltf.scene.position.sub(center);
+                                
+                                // Set camera position
+                                camera.position.z = 5;
+                                
+                                // Animation loop
+                                function animate() {
+                                    requestAnimationFrame(animate);
+                                    gltf.scene.rotation.y += 0.01;
+                                    renderer.render(scene, camera);
+                                }
+                                animate();
+                            });
+                            
+                            // Handle window resize
+                            window.addEventListener('resize', function() {
+                                const width = container.clientWidth;
+                                const height = container.clientHeight;
+                                
+                                camera.aspect = width / height;
+                                camera.updateProjectionMatrix();
+                                renderer.setSize(width, height);
+                            });
+                        }
+                    }
+
+                    // Add event listener for the add to cart button
+                    const addToCartBtn = productDetails.querySelector('.add-to-cart');
+                    if (addToCartBtn) {
+                        addToCartBtn.addEventListener('click', function() {
+                            const item = this.getAttribute('data-item');
+                            const price = parseFloat(this.getAttribute('data-price'));
+                            const productId = parseInt(this.getAttribute('data-id'));
+                            
+                            addToCart({
+                                productId,
+                                item,
+                                price
+                            });
+                            
+                            // Show notification
+                            const notification = document.createElement('div');
+                            notification.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-6 py-3 rounded-lg z-50';
+                            notification.textContent = `${item} added to cart!`;
+                            document.body.appendChild(notification);
+                            setTimeout(() => notification.remove(), 2000);
+                        });
+                    }
+                }
+            } else {
+                // Product not found
+                const productDetails = document.getElementById('product-details');
+                if (productDetails) {
+                    productDetails.innerHTML = `
+                        <div class="text-center py-12">
+                            <h1 class="text-3xl font-bold mb-4">Product Not Found</h1>
+                            <p class="text-gray-400 mb-8">The product you're looking for doesn't exist or has been removed.</p>
+                            <a href="shop.html" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-block">
+                                Return to Shop
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+        }
+    }
 });
+
+// Function to get related products based on materials and colors
+function getRelatedProducts(currentProduct, limit = 3) {
+    const db = getDatabase();
+    const products = db.products || [];
+    
+    // Filter out current product
+    const otherProducts = products.filter(p => p.id !== currentProduct.id);
+    
+    // Score each product based on shared materials and colors
+    const scoredProducts = otherProducts.map(product => {
+        let score = 0;
+        
+        // Score based on shared materials
+        const sharedMaterials = product.materials.filter(m => 
+            currentProduct.materials.includes(m)
+        ).length;
+        score += sharedMaterials * 2; // Materials are weighted more heavily
+        
+        // Score based on shared colors
+        const sharedColors = product.colors.filter(c => 
+            currentProduct.colors.includes(c)
+        ).length;
+        score += sharedColors;
+        
+        return { ...product, score };
+    });
+    
+    // Sort by score and return top matches
+    return scoredProducts
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit);
+}
 
 // Reset database (use this to force a reset if needed)
 function resetDatabase() {
@@ -724,26 +999,15 @@ function updateAuthUI() {
 
     if (currentUser) {
         loginNavItem.innerHTML = `
-            <div class="relative group">
-                <a href="#" class="nav-link text-lg hover:holo-text flex items-center py-2">
-                    ${currentUser.name}
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 ml-1">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                </a>
-                <div class="absolute right-0 w-48 bg-gray-800 border border-gray-700 rounded-md shadow-lg py-1 z-10 hidden group-hover:block" style="top: calc(100% - 5px);">
-                    <div class="px-4 py-3 border-b border-gray-700">
-                        <p class="text-sm text-gray-400">Signed in as</p>
-                        <p class="text-sm font-medium text-blue-400 truncate">${currentUser.email}</p>
-                    </div>
-                    ${currentUser.role === 'admin' 
-                        ? '<a href="admin.html" class="block px-4 py-2 text-sm text-white hover:bg-gray-700 w-full text-left">Admin Dashboard</a>'
-                        : '<a href="dashboard.html" class="block px-4 py-2 text-sm text-white hover:bg-gray-700 w-full text-left">My Dashboard</a>'
-                    }
-                    <button id="logoutBtn" class="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-700">Logout</button>
-                </div>
-            </div>
+            <a href="${currentUser.role === 'admin' ? 'admin.html' : 'dashboard.html'}" class="nav-link text-lg hover:holo-text">
+                ${currentUser.name}
+            </a>
         `;
+        
+        // Add logout button
+        const logoutItem = document.createElement('li');
+        logoutItem.innerHTML = '<button id="logoutBtn" class="nav-link text-lg hover:holo-text w-full text-left">Logout</button>';
+        loginNavItem.parentElement.appendChild(logoutItem);
 
         // Add logout handler
         document.getElementById('logoutBtn')?.addEventListener('click', logout);
@@ -1236,90 +1500,15 @@ function applySettings() {
             const styleEl = document.createElement('style');
             styleEl.id = 'odoo-styles';
             styleEl.textContent = `
-                body {
-                    background: #f0f0f0 !important;
-                    color: #212529 !important;
-                }
-                .holo-bg {
-                    background: rgba(255, 255, 255, 0.8) !important;
-                    backdrop-filter: blur(10px) !important;
-                    box-shadow: 0 1px 3px rgba(0,0,0,.1) !important;
-                }
-                .dark-mode body {
-                    background: #212529 !important;
-                    color: #f0f0f0 !important;
-                }
-                .dark-mode .holo-bg {
-                    background: rgba(33, 37, 41, 0.9) !important;
-                }
-                .neon-glow {
-                    box-shadow: 0 1px 3px rgba(0,0,0,.1) !important;
-                }
-                nav a {
-                    color: #4A5568 !important;
-                }
-                .dark-mode nav a {
-                    color: #E2E8F0 !important;
-                }
-                .holo-text {
-                    background: #714B67 !important;
-                    -webkit-background-clip: text !important;
-                    background-clip: text !important;
-                }
-                .dashboard-tab.active {
-                    border-bottom-color: #714B67 !important;
-                    color: #714B67 !important;
-                }
-                button.bg-gradient-to-r {
-                    background: #714B67 !important;
-                }
-                .bg-gray-800 {
-                    background-color: white !important;
-                    color: #333 !important;
-                    box-shadow: 0 1px 3px rgba(0,0,0,.1) !important;
-                }
-                .text-white {
-                    color: #333 !important;
-                }
-                .bg-gray-700 {
-                    background-color: #f5f5f5 !important;
-                    color: #333 !important;
-                }
-                .text-gray-400 {
-                    color: #666 !important;
-                }
-                input, select, textarea {
-                    color: #333 !important;
-                    background-color: #f5f5f5 !important;
-                }
-                .text-blue-400 {
-                    color: #714B67 !important;
-                }
-                footer.bg-black {
-                    background-color: #333 !important;
-                }
-                footer .text-white {
-                    color: #fff !important;
-                }
-                /* Dark mode overrides */
-                .dark-mode .bg-gray-800 {
-                    background-color: #333 !important;
-                    color: #f5f5f5 !important;
-                }
-                .dark-mode .text-white {
-                    color: #f5f5f5 !important;
-                }
-                .dark-mode .bg-gray-700 {
-                    background-color: #444 !important;
-                    color: #f5f5f5 !important;
-                }
-                .dark-mode .text-gray-400 {
-                    color: #aaa !important;
-                }
-                .dark-mode input, .dark-mode select, .dark-mode textarea {
-                    color: #f5f5f5 !important;
-                    background-color: #444 !important;
-                }
+                body { background: #f0f0f0 !important; }
+                .dark-mode body { background: #212529 !important; }
+                .holo-bg { background: rgba(255, 255, 255, 0.8) !important; }
+                .dark-mode .holo-bg { background: rgba(33, 37, 41, 0.9) !important; }
+                .nav-link { color: #4A5568 !important; }
+                .dark-mode .nav-link { color: #E2E8F0 !important; }
+                .holo-text { background: #714B67 !important; }
+                .bg-gray-800 { background-color: white !important; }
+                .dark-mode .bg-gray-800 { background-color: #333 !important; }
             `;
             document.head.appendChild(styleEl);
         }
@@ -1329,17 +1518,6 @@ function applySettings() {
             styleEl.remove();
         }
     }
-
-    // Update settings UI if elements exist
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const odooLikeToggle = document.getElementById('odooLikeToggle');
-    const notificationsToggle = document.getElementById('notificationsToggle');
-    const languageSelect = document.querySelector('#settings-modal select');
-
-    if (darkModeToggle) darkModeToggle.checked = !!settings.darkMode;
-    if (odooLikeToggle) odooLikeToggle.checked = !!settings.odooLike;
-    if (notificationsToggle) notificationsToggle.checked = settings.notifications !== false;
-    if (languageSelect && settings.language) languageSelect.value = settings.language;
 }
 
 // Cart Functionality
@@ -1418,4 +1596,213 @@ function deleteUser(userId) {
         return { success: true };
     }
     return { success: false, message: 'User not found' };
-} 
+}
+
+// Default navigation as fallback
+const defaultNavigation = [
+    { name: "Home", url: "index.html" },
+    { name: "Shop", url: "shop.html" },
+    { name: "About", url: "about.html" },
+    { name: "Support", url: "support.html" },
+    { name: "Contact Us", url: "contact.html" },
+    { name: "Cart", url: "cart.html" },
+    { name: "Login", url: "login.html" },
+    { name: "Settings", url: "#", id: "settings-btn" }
+];
+
+// Pre-load navigation data
+let navigationData = null;
+
+// Load navigation from pages.json with pre-loading
+async function loadNavigation() {
+    console.log('[Debug] Loading navigation');
+    
+    // Return cached navigation if available
+    if (navigationData) {
+        console.log('[Debug] Using cached navigation');
+        return navigationData;
+    }
+
+    try {
+        const response = await fetch('pages.json');
+        if (!response.ok) {
+            console.warn('[Debug] Failed to fetch pages.json, using fallback');
+            navigationData = defaultNavigation;
+            return defaultNavigation;
+        }
+
+        const data = await response.json();
+        console.log('[Debug] Loaded navigation data:', data);
+        
+        if (data.navigation && Array.isArray(data.navigation)) {
+            navigationData = data.navigation;
+            return navigationData;
+        } else {
+            console.warn('[Debug] Invalid navigation data, using fallback');
+            navigationData = defaultNavigation;
+            return defaultNavigation;
+        }
+    } catch (error) {
+        console.error('[Debug] Error loading navigation:', error);
+        navigationData = defaultNavigation;
+        return defaultNavigation;
+    }
+}
+
+// Update navigation menu with error handling
+async function updateNavigationMenu() {
+    console.log('[Debug] Starting updateNavigationMenu');
+    const navLinks = document.querySelector('.nav-links');
+    if (!navLinks) {
+        console.error('[Debug] Navigation container not found');
+        return;
+    }
+
+    try {
+        const navigation = await loadNavigation();
+        console.log('[Debug] Loaded navigation items:', navigation);
+
+        if (!Array.isArray(navigation)) {
+            console.error('[Debug] Navigation is not an array, using fallback');
+            navigation = defaultNavigation;
+        }
+
+        const navHTML = navigation.map(item => {
+            if (!item || !item.name || !item.url) {
+                console.error('[Debug] Invalid navigation item:', item);
+                return '';
+            }
+            console.log('[Debug] Processing nav item:', item);
+            
+            if (item.url === 'cart.html') {
+                return `<li><a href="${item.url}" class="nav-link text-lg hover:holo-text">${item.name} (<span id="cart-count">0</span>)</a></li>`;
+            }
+            return `<li><a href="${item.url}" ${item.id ? `id="${item.id}"` : ''} class="nav-link text-lg hover:holo-text">${item.name}</a></li>`;
+        }).join('');
+
+        console.log('[Debug] Setting navigation HTML:', navHTML);
+        navLinks.innerHTML = navHTML;
+
+        // Setup mobile menu
+        initializeMobileMenu();
+
+    } catch (error) {
+        console.error('[Debug] Error in updateNavigationMenu:', error);
+        // Set fallback navigation if everything fails
+        navLinks.innerHTML = defaultNavigation.map(item => 
+            `<li><a href="${item.url}" ${item.id ? `id="${item.id}"` : ''} class="nav-link text-lg hover:holo-text">${item.name}</a></li>`
+        ).join('');
+    }
+
+    // Always try to update UI components
+    try {
+        if (typeof updateAuthUI === 'function') {
+            console.log('[Debug] Updating auth UI');
+            updateAuthUI();
+        }
+        if (typeof updateCartCount === 'function') {
+            console.log('[Debug] Updating cart count');
+            updateCartCount();
+        }
+    } catch (error) {
+        console.error('[Debug] Error updating UI components:', error);
+    }
+}
+
+// Enhanced mobile menu initialization
+function initializeMobileMenu() {
+    console.log('[Debug] Initializing mobile menu');
+    const hamburgerBtn = document.querySelector('.mobile-menu-btn');
+    const navLinks = document.querySelector('.nav-links');
+    const body = document.body;
+
+    if (!hamburgerBtn || !navLinks) {
+        console.error('[Debug] Mobile menu elements not found');
+        return;
+    }
+
+    // Set initial state
+    hamburgerBtn.setAttribute('aria-expanded', 'false');
+    hamburgerBtn.setAttribute('aria-label', 'Open main menu');
+    navLinks.setAttribute('aria-hidden', 'true');
+
+    // Toggle menu
+    hamburgerBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('[Debug] Hamburger clicked');
+        
+        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+        this.classList.toggle('active');
+        navLinks.classList.toggle('active');
+        body.classList.toggle('menu-open');
+        
+        this.setAttribute('aria-expanded', !isExpanded);
+        this.setAttribute('aria-label', isExpanded ? 'Open main menu' : 'Close main menu');
+        navLinks.setAttribute('aria-hidden', isExpanded);
+
+        // Add animation delays
+        if (!isExpanded) {
+            navLinks.querySelectorAll('li').forEach((item, index) => {
+                item.style.setProperty('--delay', index + 1);
+            });
+        }
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!hamburgerBtn.contains(e.target) && 
+            !navLinks.contains(e.target) && 
+            navLinks.classList.contains('active')) {
+            console.log('[Debug] Closing mobile menu via outside click');
+            hamburgerBtn.classList.remove('active');
+            navLinks.classList.remove('active');
+            body.classList.remove('menu-open');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+            hamburgerBtn.setAttribute('aria-label', 'Open main menu');
+            navLinks.setAttribute('aria-hidden', 'true');
+        }
+    });
+
+    // Handle escape key
+    document.addEventListener('keyup', function(e) {
+        if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+            console.log('[Debug] Closing mobile menu via escape key');
+            hamburgerBtn.classList.remove('active');
+            navLinks.classList.remove('active');
+            body.classList.remove('menu-open');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+            hamburgerBtn.setAttribute('aria-label', 'Open main menu');
+            navLinks.setAttribute('aria-hidden', 'true');
+            hamburgerBtn.focus();
+        }
+    });
+}
+
+// Set initial state
+document.addEventListener('DOMContentLoaded', function() {
+    // Hide navigation initially until loaded
+    const navLinks = document.querySelector('.nav-links');
+    if (navLinks) {
+        console.log('[Debug] Setting initial navigation state');
+        navLinks.style.opacity = '0';
+        
+        // Load navigation with fallback
+        updateNavigationMenu().then(() => {
+            console.log('[Debug] Navigation loaded, showing content');
+            navLinks.style.opacity = '1';
+            navLinks.style.transition = 'opacity 0.3s ease-in-out';
+        }).catch(error => {
+            console.error('[Debug] Navigation load failed, showing fallback:', error);
+            // Show navigation even if there was an error
+            navLinks.style.opacity = '1';
+        });
+    }
+});
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[Debug] DOM loaded, initializing navigation');
+    updateNavigationMenu().catch(error => {
+        console.error('[Debug] Error during navigation initialization:', error);
+    });
+});

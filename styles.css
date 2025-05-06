@@ -1,18 +1,22 @@
 /* styles.css */
 body {
     margin: 0;
-    background-color: #0a0e17;
-    color: #e2e8f0;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     font-family: 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
     transition: background-color 0.3s, color 0.3s;
     background: linear-gradient(180deg, #0A0E2A 0%, #1E3A8A 100%);
     scroll-behavior: smooth;
 }
 .holo-bg {
-    background: rgba(10, 14, 23, 0.8);
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 100, 255, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+}
+.dark-mode .holo-bg {
+    background: rgba(10, 14, 23, 0.8);
+    box-shadow: 0 4px 20px rgba(0, 100, 255, 0.15);
 }
 .neon-glow {
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
@@ -35,6 +39,85 @@ body {
 .animate-hero { opacity: 0; }
 .animate-hero.delay-1 { animation-delay: 0.3s; }
 .animate-hero.delay-2 { animation-delay: 0.6s; }
+
+/* Authentication Animations */
+.form-slide-enter {
+    animation: slideIn 0.4s ease forwards;
+}
+
+.form-slide-exit {
+    animation: slideOut 0.4s ease forwards;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+}
+
+/* Hero Section */
+.hero-section {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 20px;
+    overflow: hidden;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.animate-hero {
+    opacity: 0;
+    animation: fadeInUp 1s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-content h1 {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    text-shadow: 0 0 10px rgba(66, 135, 245, 0.5);
+}
+
+.hero-content p {
+    font-size: 1.5rem;
+    margin-bottom: 2.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
 
 /* Dark Mode Styles */
 body.dark-mode {
@@ -96,43 +179,306 @@ input:checked + .settings-toggle-slider:before {
     transform: translateX(24px);
 }
 
-/* Navigation active state */
-.nav-link.active {
-    color: #60a5fa;
-    font-weight: 500;
+/* Navigation styles */
+.nav-links {
+    transition: transform 0.3s ease-in-out;
 }
 
-/* User dropdown enhancements */
-.user-dropdown {
-    margin-top: 0 !important; /* Remove any gap */
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    transform: translateY(0); /* Ensure it's directly connected to the trigger */
-}
-
-/* Hover behavior for smoother dropdown experience */
-.group:hover .user-dropdown {
-    display: block !important;
-}
-
-.user-dropdown:hover {
-    display: block !important;
-}
-
-/* Improved admin dashboard */
-.dashboard-tab {
-    transition: all 0.2s ease;
+.nav-link {
     position: relative;
+    transition: all 0.2s ease;
 }
 
-.dashboard-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 2px;
+.nav-link:hover {
     background: linear-gradient(to right, #2563eb, #7c3aed);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Base Navigation Structure */
+.nav-container {
+    position: relative;
+    z-index: 1000;
+    min-height: 64px; /* Add minimum height to prevent layout shift */
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    opacity: 0; /* Start invisible */
+    transition: opacity 0.3s ease-in-out;
+}
+
+.nav-links.loaded {
+    opacity: 1;
+}
+
+@media (min-width: 1025px) {
+    .nav-links {
+        display: flex;
+        align-items: center;
+    }
+
+    .mobile-menu-btn {
+        display: none;
+    }
+
+    .nav-links li {
+        margin: 0 1rem;
+    }
+}
+
+/* Mobile Menu Fixes */
+@media (max-width: 1024px) {
+    .mobile-menu-btn {
+        margin-left: auto;
+        margin-right: 1rem;
+    }
+
+    .nav-links {
+        padding-top: 4rem;
+    }
+
+    .nav-links li {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-links li a {
+        display: block;
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .nav-links:not(.active) {
+        pointer-events: none;
+    }
+
+    .nav-links.active {
+        pointer-events: auto;
+    }
+}
+
+/* Mobile Navigation */
+@media (max-width: 1024px) {
+    .mobile-menu-btn {
+        display: block;
+        width: 30px;
+        height: 30px;
+        position: relative;
+        z-index: 1000;
+    }
+
+    .nav-links {
+        display: flex;
+        position: fixed;
+        top: 0;
+        right: -300px; /* Start off-screen */
+        height: 100vh;
+        width: 300px;
+        background: var(--bg-primary);
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        transition: transform 0.3s ease-in-out;
+        z-index: 999;
+    }
+
+    .dark-mode .nav-links {
+        background: rgba(17, 24, 39, 0.98);
+    }
+
+    .nav-links.active {
+        transform: translateX(-300px);
+    }
+
+    .nav-links li {
+        margin: 1rem 0;
+        opacity: 0;
+        transform: translateX(20px);
+        transition: all 0.3s ease-in-out;
+    }
+
+    .nav-links.active li {
+        opacity: 1;
+        transform: translateX(0);
+        transition-delay: calc(0.1s * var(--delay));
+    }
+
+    .mobile-menu-btn span {
+        display: block;
+        width: 100%;
+        height: 2px;
+        background: var(--text-primary);
+        position: absolute;
+        left: 0;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-menu-btn span:nth-child(1) { top: 25%; }
+    .mobile-menu-btn span:nth-child(2) { top: 50%; transform: translateY(-50%); }
+    .mobile-menu-btn span:nth-child(3) { bottom: 25%; }
+
+    .mobile-menu-btn.active span:nth-child(1) {
+        top: 50%;
+        transform: translateY(-50%) rotate(45deg);
+    }
+
+    .mobile-menu-btn.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .mobile-menu-btn.active span:nth-child(3) {
+        bottom: 50%;
+        transform: translateY(50%) rotate(-45deg);
+    }
+
+    body.menu-open {
+        overflow: hidden;
+    }
+}
+
+/* Authenticated user menu adjustments */
+.auth-nav .nav-links {
+    display: none;
+}
+
+.auth-nav .mobile-menu-btn {
+    display: block;
+}
+
+.auth-nav .nav-links.active {
+    display: flex;
+}
+
+/* Advanced Settings Styles */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: #4B5563;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #3B82F6;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: #2563EB;
+}
+
+/* High Contrast Mode */
+.high-contrast {
+    --text-opacity: 1;
+    --bg-opacity: 1;
+}
+
+.high-contrast .holo-text {
+    text-shadow: none;
+    color: #FFFFFF !important;
+    background: #000000 !important;
+}
+
+/* Font Size Adjustments */
+.font-size-small {
+    font-size: 0.9em;
+}
+
+.font-size-large {
+    font-size: 1.1em;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .reduce-motion * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 /* Odoo theme overrides will be added through JavaScript */
+
+/* Rainbow text effect */
+.rainbow-text, .hover\:rainbow-text:hover {
+    background: linear-gradient(
+        to right,
+        #ff0000,
+        #ff8000,
+        #ffff00,
+        #00ff00,
+        #00ffff,
+        #0000ff,
+        #8000ff,
+        #ff0080
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: rainbow-shift 5s linear infinite;
+}
+
+@keyframes rainbow-shift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+/* Light mode styles */
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f3f4f6;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --accent-primary: linear-gradient(
+        to right,
+        #ff0000,
+        #ff8000,
+        #ffff00,
+        #00ff00,
+        #00ffff,
+        #0000ff,
+        #8000ff,
+        #ff0080
+    );
+}
+
+/* Dark mode styles */
+.dark-mode {
+    --bg-primary: #0a0e17;
+    --bg-secondary: #1f2937;
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+}
+
+/* Settings modal */
+.settings-modal {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Product cards */
+.product-card {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}

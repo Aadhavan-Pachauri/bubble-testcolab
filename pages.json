@@ -1,0 +1,94 @@
+{
+  "pages": [
+    {
+      "id": "home",
+      "path": "index.html",
+      "title": "Bubble - 3D Printing Revolution",
+      "nav": true,
+      "navOrder": 1
+    },
+    {
+      "id": "shop",
+      "path": "shop.html",
+      "title": "Shop - Bubble",
+      "nav": true,
+      "navOrder": 2
+    },
+    {
+      "id": "about",
+      "path": "about.html",
+      "title": "About Us - Bubble",
+      "nav": true,
+      "navOrder": 3
+    },
+    {
+      "id": "support",
+      "path": "support.html",
+      "title": "Support - Bubble",
+      "nav": true,
+      "navOrder": 4
+    },
+    {
+      "id": "contact",
+      "path": "contact.html",
+      "title": "Contact Us - Bubble",
+      "nav": true,
+      "navOrder": 5
+    },
+    {
+      "id": "cart",
+      "path": "cart.html",
+      "title": "Cart - Bubble",
+      "nav": true,
+      "navOrder": 6
+    },
+    {
+      "id": "login",
+      "path": "login.html",
+      "title": "Login - Bubble",
+      "nav": true,
+      "navOrder": 7
+    },
+    {
+      "id": "gig",
+      "path": "gig.html",
+      "title": "Product Gigs - Bubble",
+      "nav": true,
+      "navOrder": 8
+    },
+    {
+      "id": "advanced-settings",
+      "path": "advanced-settings.html",
+      "title": "Advanced Settings - Bubble",
+      "nav": false,
+      "navOrder": null
+    },
+    {
+      "id": "admin",
+      "path": "admin.html",
+      "title": "Admin Dashboard - Bubble",
+      "nav": false,
+      "navOrder": null,
+      "requiresAuth": true,
+      "requiresAdmin": true
+    },
+    {
+      "id": "dashboard",
+      "path": "dashboard.html",
+      "title": "User Dashboard - Bubble",
+      "nav": false,
+      "navOrder": null,
+      "requiresAuth": true
+    }
+  ],
+  "navigation": [
+    { "name": "Home", "url": "index.html" },
+    { "name": "Shop", "url": "shop.html" },
+    { "name": "About", "url": "about.html" },
+    { "name": "Support", "url": "support.html" },
+    { "name": "Contact Us", "url": "contact.html" },
+    { "name": "Cart", "url": "cart.html" },
+    { "name": "Login", "url": "login.html" },
+    { "name": "Settings", "url": "#", "id": "settings-btn" }
+  ]
+}
